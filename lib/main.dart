@@ -79,7 +79,7 @@ class Player {
 }
 
 class Game {
-  var players = [Player("Evan", 200)];
+  var players = [];
   int bottom = 200;
   int dealerIndex = 0;
   int playersStillInGame = 0;
@@ -173,17 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final int y_diff = 30;
   final double LIST_HEIGHT = 600;
   final double LIST_WIDTH = 100;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter += 2;
-    });
-  }
+  var game = Game();
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +205,35 @@ class _MyHomePageState extends State<MyHomePage> {
                 bottomRight: Radius.circular(20),
                 topRight: Radius.circular(20))));
 
+    if (game.players.length == 0)
+      return Scaffold(
+          body: Center(
+            child: Container(
+              width: 300,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Get started",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  Text(
+                    "Dealer's name",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  TextField()
+                ],
+              ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {},
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ));
     return Scaffold(
       body: Row(
         children: [
@@ -437,7 +456,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () {},
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
