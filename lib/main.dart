@@ -87,7 +87,7 @@ class Game {
   int returnPlayerIndex(String _name) {
     for (int i = 0; i < players.length; ++i) {
       if (players[i].name == _name) {
-        return i + 1;
+        return i;
       }
     }
     return players.length;
@@ -300,7 +300,8 @@ class MainScreen extends StatefulWidget {
   var game;
   bool canCheck() {
     if (game.currentCall == 0 ||
-        (game.cycleIndex == 1 &&
+        (game.currentCall == 2 &&
+            game.cycleIndex == 1 &&
             game.currentPlayerIndex == game.bigBlindIndex)) {
       return true;
     }
@@ -352,7 +353,7 @@ class _MainScreenState extends State<MainScreen> {
         temp.addChips(widget.game.currentPool);
         final snackBar = SnackBar(
           content: Text(
-            temp.name + "wins!!",
+            temp.name + " wins \$" + widget.game.currentPool.toString() + "!!",
             style: TextStyle(fontSize: 16),
           ),
         );
@@ -366,42 +367,44 @@ class _MainScreenState extends State<MainScreen> {
             builder: (BuildContext context) =>
                 StatefulBuilder(builder: (context, StateSetter _setState) {
                   return AlertDialog(
-                    title: const Text('Who win?'),
-                    content: Flexible(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "Name: ",
-                                textAlign: TextAlign.left,
-                                style: TextStyle(fontSize: 14),
-                              ),
-                              SizedBox(
-                                width: 20,
-                              ),
-                              DropdownButton<String>(
-                                value: dropdownValue,
-                                items: widget.game.players
-                                    .map<DropdownMenuItem<String>>(
-                                        (value) => DropdownMenuItem<String>(
-                                              value: value.name,
-                                              child: Text(value.name),
-                                            ))
-                                    .toList(),
-                                onChanged: (changedValue) {
-                                  dropdownValue = changedValue!;
-                                  _setState(() {
-                                    dropdownValue;
-                                  });
-                                },
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
+                    title: Text('Who win \$' +
+                        widget.game.currentPool.toString() +
+                        " ?"),
+                    content: SizedBox(
+                        height: 50,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Name: ",
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                SizedBox(
+                                  width: 20,
+                                ),
+                                DropdownButton<String>(
+                                  value: dropdownValue,
+                                  items: widget.game.players
+                                      .map<DropdownMenuItem<String>>(
+                                          (value) => DropdownMenuItem<String>(
+                                                value: value.name,
+                                                child: Text(value.name),
+                                              ))
+                                      .toList(),
+                                  onChanged: (changedValue) {
+                                    dropdownValue = changedValue!;
+                                    _setState(() {
+                                      dropdownValue;
+                                    });
+                                  },
+                                )
+                              ],
+                            )
+                          ],
+                        )),
                     actions: <Widget>[
                       TextButton(
                         onPressed: () {
@@ -463,43 +466,46 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     Widget poolIndicator() {
-      return Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  SizedBox(width: 20),
-                  Text("Calling " + widget.game.currentCall.toString())
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    "Pool " + widget.game.currentPool.toString(),
-                    textAlign: TextAlign.end,
-                  ),
-                  SizedBox(width: 20)
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 5),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              width: 250,
-              height: 40,
-              child: LinearProgressIndicator(
-                value: widget.game.currentCall /
-                    widget.game.currentPool, // percent filled
-                color: Colors.orange,
-                backgroundColor: Colors.red[600],
+      return SizedBox(
+        width: 250,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(width: 20),
+                    Text("Calling " + widget.game.currentCall.toString())
+                  ],
+                ),
+                Row(
+                  children: [
+                    Text(
+                      "Pool " + widget.game.currentPool.toString(),
+                      textAlign: TextAlign.end,
+                    ),
+                    SizedBox(width: 20)
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 5),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: 250,
+                height: 40,
+                child: LinearProgressIndicator(
+                  value: widget.game.currentCall /
+                      widget.game.currentPool, // percent filled
+                  color: Colors.orange,
+                  backgroundColor: Colors.red[600],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
@@ -521,7 +527,7 @@ class _MainScreenState extends State<MainScreen> {
             ],
           ),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: player.folded ? Colors.grey : Colors.white,
             shape: BoxShape.circle,
             border: Border.all(color: Colors.blueGrey, width: 2),
           ));
@@ -600,7 +606,8 @@ class _MainScreenState extends State<MainScreen> {
                 child: (widget.game.cycleIndex == 0)
                     ? Container(
                         decoration: BoxDecoration(
-                            shape: BoxShape.circle, color: Colors.red[500]),
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                            color: Colors.green[100]),
                         width: 150,
                         height: 150,
                         child: TextButton(
@@ -608,17 +615,18 @@ class _MainScreenState extends State<MainScreen> {
                               shape: MaterialStateProperty.all(CircleBorder())),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.play_arrow,
                                 size: 40,
-                                color: Colors.greenAccent,
+                                color: Colors.greenAccent[700],
                               ),
                               SizedBox(
                                 height: 5,
                               ),
                               Text("Start",
-                                  style: TextStyle(color: Colors.greenAccent))
+                                  style:
+                                      TextStyle(color: Colors.greenAccent[700]))
                             ],
                           ),
                           onPressed: () {
@@ -952,15 +960,6 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 DropdownButton<String>(
                                   value: dropdownValue,
-                                  icon: const Icon(Icons.arrow_downward),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style:
-                                      const TextStyle(color: Colors.deepPurple),
-                                  underline: Container(
-                                    height: 2,
-                                    color: Colors.deepPurpleAccent,
-                                  ),
                                   items: widget.game.players
                                       .map<DropdownMenuItem<String>>(
                                           (value) => DropdownMenuItem<String>(
@@ -991,8 +990,10 @@ class _MainScreenState extends State<MainScreen> {
                         TextButton(
                           onPressed: () {
                             setState(() {
-                              widget.game.addPlayer(textController.text,
-                                  widget.game.returnPlayerIndex(dropdownValue));
+                              widget.game.addPlayer(
+                                  textController.text,
+                                  widget.game.returnPlayerIndex(dropdownValue) +
+                                      1);
                             });
                             textController.clear();
                             Navigator.pop(context, 'OK');
